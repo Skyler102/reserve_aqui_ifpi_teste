@@ -263,3 +263,34 @@ h2, h4 {
     pointer-events: none; 
     color: #6c757d; /* Cor de texto desabilitado */
 }
+
+/* --- Paginação (para tabelas) --- */
+.paginacao {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 0.5rem;
+}
+
+.paginacao a, .paginacao span {
+    color: var(--texto-escuro); /* Ajustado para texto escuro */
+    padding: 0.5rem 0.75rem;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.paginacao a {
+    border-radius: 8px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.paginacao a:hover { 
+    background-color: rgba(0,0,0,0.05); /* Um hover mais sutil */
+    color: var(--texto-escuro);
+}
+
+.paginacao a.disabled { 
+    pointer-events: none; 
+    color: #6c757d; /* Cor de texto desabilitado */
+}

@@ -29,6 +29,23 @@ class Agendamento {
         return $stmt->execute([$status, $id]);
     }
     
+    public function listarTodosComPaginacao($limit, $offset) {
+        $stmt = $this->pdo->prepare(
+            "SELECT 
+                a.id, a.motivo, a.data_hora_inicio, a.data_hora_fim, a.status,
+                u.nome_completo as usuario_nome, r.nome as recurso_nome
+            FROM agendamentos a
+            JOIN usuarios u ON a.id_usuario = u.id
+            JOIN recursos r ON a.id_recurso = r.id
+            ORDER BY a.data_hora_inicio DESC
+            LIMIT :limit OFFSET :offset"
+        );
+        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function deletar($id) {
         $stmt = $this->pdo->prepare("DELETE FROM agendamentos WHERE id = ?");
         return $stmt->execute([$id]);
