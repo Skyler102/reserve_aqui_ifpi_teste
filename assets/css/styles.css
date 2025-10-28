@@ -1,0 +1,174 @@
+/* Estilos Globais */
+:root {
+    --ifpi-green: #2e7d32;
+    --ifpi-dark-green: #1b5e20;
+    --ifpi-light-green: #4caf50;
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    line-height: 1.6;
+}
+
+/* Cabeçalho */
+.logo-img {
+    max-height: 60px;
+    width: auto;
+}
+
+/* Links */
+.nav-link {
+    color: var(--ifpi-green);
+}
+
+.nav-link:hover {
+    color: var(--ifpi-dark-green);
+}
+
+/* Botões */
+.btn-primary {
+    background-color: var(--ifpi-green);
+    border-color: var(--ifpi-green);
+}
+
+.btn-primary:hover {
+    background-color: var(--ifpi-dark-green);
+    border-color: var(--ifpi-dark-green);
+}
+
+.btn-outline-primary {
+    color: var(--ifpi-green);
+    border-color: var(--ifpi-green);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--ifpi-green);
+    border-color: var(--ifpi-green);
+}
+
+/* Cards */
+.card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: var(--ifpi-green);
+    color: white;
+    border-radius: 10px 10px 0 0 !important;
+}
+
+/* Tabelas */
+.table th {
+    background-color: var(--ifpi-green);
+    color: white;
+}
+
+/* Status badges */
+.badge {
+    padding: 0.5em 1em;
+    font-weight: normal;
+}
+
+/* Calendário */
+.fc-event {
+    border-radius: 3px;
+    border: none;
+}
+
+.fc-event.aprovado {
+    background-color: var(--ifpi-green);
+}
+
+.fc-event.pendente {
+    background-color: #ffc107;
+}
+
+.fc-event.recusado {
+    background-color: #dc3545;
+}
+
+/* QR Code */
+.qr-code-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.qr-code-container img {
+    max-width: 300px;
+    height: auto;
+}
+
+/* Formulários */
+.form-control:focus {
+    border-color: var(--ifpi-light-green);
+    box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+/* Animações */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .card {
+        margin: 10px;
+    }
+    
+    .table-responsive {
+        margin: 0 -15px;
+    }
+}
+
+/* Acessibilidade */
+.btn:focus, 
+.form-control:focus {
+    outline: 3px solid rgba(46, 125, 50, 0.5);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fade-in {
+        animation: none;
+    }
+}
+
+/* Alto Contraste */
+@media (prefers-contrast: more) {
+    :root {
+        --ifpi-green: #006400;
+        --ifpi-dark-green: #004d00;
+    }
+    
+    .card {
+        border: 1px solid #000;
+    }
+    
+    .table th {
+        border: 1px solid #000;
+    }
+}

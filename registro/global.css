@@ -1,0 +1,330 @@
+:root {
+    --cor-fundo: #1E3534;
+    --cor-formulario: #2A4B49; /* Cor do formulário principal de login */
+    --cor-formulario-gerador: #23403F; /* Nova cor para o formulário do gerador de matrículas */
+    --cor-texto-primario: #ffffff;
+    --cor-texto-secundario: #c0d1ce;
+    --cor-destaque: #66F6D2;
+    --cor-botao-texto: #1E3534;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto-primario);
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+}
+
+.conteudo-principal {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 2rem 1rem;
+    z-index: 5;
+}
+
+.container-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6rem;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.logo-movel {
+    display: none;
+    width: 125px;
+    margin: 0 auto 1.5rem auto;
+}
+
+
+.secao-info {
+    flex-basis: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.logo-imagem {
+    width: 350px;
+    height: auto;
+}
+
+.slogan {
+    font-size: 1.2rem;
+    color: var(--cor-texto-secundario);
+    line-height: 1.6;
+    max-width: 450px;
+}
+
+.ilustracao {
+    width: 450px;
+    height: auto;
+}
+
+.container-formulario {
+    flex-basis: 40%;
+    max-width: 450px;
+    width: 100%;
+}
+
+.formulario-login {
+    background-color: var(--cor-formulario); /* Usa a cor original do formulário */
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    width: 100%;
+}
+
+.formulario-login h2 {
+    font-weight: 600;
+    font-size: 1.8rem;
+    text-align: left;
+}
+
+.formulario-login .subtitulo-form {
+    color: var(--cor-texto-secundario);
+    margin-bottom: 2rem;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.rotulo-campo {
+    color: var(--cor-texto-secundario);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.grupo-input {
+    position: relative;
+}
+
+.campo-input {
+    width: 100%;
+    background-color: #fff;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+}
+
+.campo-input:focus {
+   outline: 2px solid var(--cor-destaque);
+   outline-offset: 2px;
+}
+
+.botao-acessar {
+    background-color: var(--cor-destaque);
+    color: var(--cor-botao-texto);
+    border: none;
+    font-weight: 600;
+    width: 100%;
+    padding: 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+}
+.botao-acessar:hover {
+    background-color: #55E8C3;
+}
+
+.link-alternativo {
+    display: block;
+    text-align: center;
+    background-color: transparent;
+    border: 1px solid var(--cor-destaque);
+    color: var(--cor-destaque);
+    padding: 0.85rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s;
+    margin-top: 1rem;
+}
+.link-alternativo:hover {
+    background-color: var(--cor-destaque);
+    color: var(--cor-botao-texto);
+}
+
+.rodape-pagina {
+    background-color: transparent;
+    color: var(--cor-texto-secundario);
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    z-index: 5;
+}
+.rodape-pagina span {
+    margin: 0 1rem;
+}
+.rodape-pagina .fas, .rodape-pagina .far {
+    margin-right: 0.5rem;
+}
+
+/* --- Media Queries --- */
+@media (max-width: 991.98px) {
+    .secao-info {
+        display: none;
+    }
+    .logo-movel {
+        display: block;
+    }
+    .container-formulario {
+        flex-basis: 100%;
+        max-width: 420px;
+    }
+     .formulario-login h2, .formulario-login .subtitulo-form {
+        text-align: center;
+    }
+}
+
+
+/* ======================================================= */
+/* == ESTILOS GERAIS PARA O GERADOR DE MATRÍCULAS == */
+/* ======================================================= */
+
+.gerenciador-container {
+    width: 100%;
+    max-width: 950px;
+    background-color: var(--cor-formulario-gerador);
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.gerenciador-container h2,
+.gerenciador-container h3 {
+    text-align: center;
+    font-weight: 600;
+    color: var(--cor-texto-primario);
+}
+
+.gerenciador-container .subtitulo-form {
+    text-align: center;
+    color: var(--cor-texto-secundario);
+    margin-bottom: 2rem;
+    font-size: 1rem;
+}
+
+.gerenciador-container h3 {
+    text-align: left;
+    font-size: 1.4rem;
+}
+
+.separador-gerador {
+    border: none;
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 2.5rem 0;
+}
+
+select.campo-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23c0d1ce' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-color: #fff;
+    color: #333;
+}
+
+.status-disponivel, .status-usado {
+    padding: 0.25rem 0.6rem;
+    border-radius: 5px;
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+.status-disponivel {
+    background-color: rgba(102, 246, 210, 0.15);
+    color: #66F6D2;
+}
+
+.status-usado {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--cor-texto-secundario);
+}
+
+.paginacao {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 0.5rem;
+}
+
+.paginacao a, .paginacao span {
+    color: var(--cor-texto-secundario);
+    padding: 0.5rem 0.75rem;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.paginacao a {
+    border-radius: 8px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.paginacao a:hover { 
+    background-color: rgba(255,255,255,0.1); 
+    color: var(--cor-texto-primario);
+}
+
+.paginacao a.disabled { 
+    pointer-events: none; 
+    color: rgba(255,255,255,0.3);
+}
+
+.btn-text-danger {
+    padding: 0.5rem 0.7rem;
+}
+.btn-text-danger:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* ======================================================= */
+/* == NOVO LAYOUT DO FORMULÁRIO GERADOR (COM IDs) == */
+/* ======================================================= */
+
+#form-gerador-linha {
+    display: flex;
+    align-items: flex-end; /* Alinha os itens pela base (label e botão ficam alinhados) */
+    gap: 1rem;             /* Espaço entre o seletor e o botão */
+}
+
+#form-grupo-select {
+    flex-grow: 1; /* Faz o campo do seletor ocupar todo o espaço disponível */
+}
+
+#btn-gerar-matricula {
+    width: auto;           /* Largura automática baseada no conteúdo */
+    margin-top: 0;         /* Remove margem superior que não é mais necessária */
+    flex-shrink: 0;        /* Impede que o botão encolha se a tela for pequena */
+}
