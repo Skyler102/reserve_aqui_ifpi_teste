@@ -21,12 +21,13 @@ require_once __DIR__ . '/../includes/bib.php'; // Corretamente incluído
  * @return bool Retorna true se houver conflito, false caso contrário.
  */
 function verificarConflito(PDO $pdo, int $id_recurso, string $inicio_str, string $fim_str): bool {
+    // Esta lógica está correta para encontrar sobreposições (overlaps)
     $sql = "SELECT COUNT(id) 
             FROM agendamentos 
             WHERE id_recurso = ? 
               AND status IN ('pendente', 'aprovado')
-              AND ? < data_hora_fim 
-              AND ? > data_hora_inicio";
+              AND CAST(? AS DATETIME) < data_hora_fim 
+              AND CAST(? AS DATETIME) > data_hora_inicio";
     
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$id_recurso, $inicio_str, $fim_str]);
@@ -37,7 +38,7 @@ function verificarConflito(PDO $pdo, int $id_recurso, string $inicio_str, string
 // ======================================================
 // 🔹 VERIFICAÇÕES DE SEGURANÇA
 // ======================================================
-
+// ... (O código de segurança está correto, sem mudanças) ...
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../formulario_novo_agendamento.php');
     exit;
@@ -54,7 +55,6 @@ if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST
     header('Location: ../formulario_novo_agendamento.php');
     exit;
 }
-
 // ======================================================
 // 🔹 PROCESSAMENTO PRINCIPAL
 // ======================================================
@@ -87,11 +87,19 @@ try {
             throw new Exception('Para agendamento único, as datas de início e fim são obrigatórias.');
         }
 
-        if (new DateTime($data_hora_fim_str) <= new DateTime($data_hora_inicio_str)) {
+        // Formata para o padrão do MySQL (Y-m-d H:i:s)
+        $inicio_dt = new DateTime($data_hora_inicio_str);
+        $fim_dt = new DateTime($data_hora_fim_str);
+        
+        $inicio_sql = $inicio_dt->format('Y-m-d H:i:s');
+        $fim_sql = $fim_dt->format('Y-m-d H:i:s');
+
+
+        if ($fim_dt <= $inicio_dt) {
             throw new Exception('A data/hora de fim deve ser posterior à data/hora de início.');
         }
 
-        if (verificarConflito($pdo, $id_recurso, $data_hora_inicio_str, $data_hora_fim_str)) {
+        if (verificarConflito($pdo, $id_recurso, $inicio_sql, $fim_sql)) {
             throw new Exception('O recurso selecionado já está agendado neste horário. Por favor, escolha outro horário.');
         }
 
@@ -103,7 +111,7 @@ try {
         ");
         $stmt->execute([
             $_SESSION['id_usuario'], $id_recurso, $turma_id, $disciplina_id, 
-            $motivo, $data_hora_inicio_str, $data_hora_fim_str
+            $motivo, $inicio_sql, $fim_sql
         ]);
     }
 
@@ -131,14 +139,8 @@ try {
         $data_fim_obj = new DateTime($data_fim_rec);
         $agendamentos_criados = 0;
 
-        // =================================================================
-        // ⭐️ MUDANÇA 1: Gerar um ID único para este grupo de recorrência
-        // =================================================================
         $grupo_id = uniqid('rec_');
 
-        // =================================================================
-        // ⭐️ MUDANÇA 2: Adicionar a nova coluna no seu INSERT
-        // =================================================================
         $stmt = $pdo->prepare("
             INSERT INTO agendamentos 
                 (id_usuario, id_recurso, id_turma, id_disciplina, motivo, data_hora_inicio, data_hora_fim, status, tipo_agendamento, grupo_recorrencia_id)
@@ -157,9 +159,6 @@ try {
                     throw new Exception('Conflito encontrado para o dia ' . $data_atual->format('d/m/Y') . '. A operação foi cancelada.');
                 }
 
-                // =================================================================
-                // ⭐️ MUDANÇA 3: Passar o $grupo_id no execute
-                // =================================================================
                 $stmt->execute([
                     $_SESSION['id_usuario'], $id_recurso, $turma_id, $disciplina_id, 
                     $motivo, $inicio_agendamento, $fim_agendamento, $grupo_id
@@ -179,7 +178,9 @@ try {
     // ======================================================
     $pdo->commit();
     set_flash('Solicitação de agendamento enviada com sucesso! Aguarde a aprovação.', 'success');
-    header('Location: ../meus_agendamentos.php'); // Redireciona para a página correta
+    
+    // ⭐️ MUDANÇA: Redireciona para a página correta
+    header('Location: ../painel_agendamentos.php'); 
     exit;
 
 } catch (Exception $e) {
@@ -190,3 +191,4 @@ try {
     header('Location: ../formulario_novo_agendamento.php');
     exit;
 }
+

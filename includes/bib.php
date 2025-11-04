@@ -1,4 +1,6 @@
 <?php
+// /includes/bib.php
+
 // Inicia a sessão se ela ainda não tiver sido iniciada.
 // Essencial para que as variáveis de sessão ($_SESSION) funcionem.
 if (session_status() == PHP_SESSION_NONE) {
@@ -232,7 +234,7 @@ function verificar_admin() {
  * Retorna true em caso de sucesso (ou quando apenas logado) e false em caso de falha básica.
  *
  * Parâmetros opcionais em $opts:
- *  - use_mail: bool  -> forçar uso de mail() quando disponível
+ * - use_mail: bool  -> forçar uso de mail() quando disponível
  */
 function enviar_notificacao(string $to, string $subject, string $body, array $opts = []): bool {
     // Validação básica do email receptor
@@ -259,4 +261,192 @@ function enviar_notificacao(string $to, string $subject, string $body, array $op
     return true;
 }
 
+// ======================================================
+// ⭐️ FUNÇÕES ADICIONADAS (ORDENAÇÃO, PAGINAÇÃO, TRADUÇÃO)
+// ======================================================
+
+/**
+ * Constrói uma query string preservando os parâmetros GET atuais.
+ * Usado para criar links de paginação e ordenação.
+ * @param array $novos_params Parâmetros para adicionar ou sobrescrever (ex: ['page' => 2])
+ * @return string A query string completa (ex: "?sort=data&page=2")
+ */
+function construir_query_string(array $novos_params): string {
+    // Pega todos os parâmetros GET atuais
+    $params = $_GET;
+    
+    // Sobrescreve ou adiciona os novos parâmetros
+    $params = array_merge($params, $novos_params);
+    
+    // Constrói e retorna a query string
+    return '?' . http_build_query($params);
+}
+
+/**
+ * Gera o HTML para um cabeçalho de tabela (<th>) ordenável.
+ * @param string $label O texto do cabeçalho (ex: "Recurso")
+ * @param string $coluna_nome O nome da coluna na query (ex: "recurso")
+ * @param string $sort_col_atual A coluna de ordenação atual
+ * @param string $sort_order_atual A direção da ordenação atual (ASC ou DESC)
+ */
+function th_sortable(string $label, string $coluna_nome, string $sort_col_atual, string $sort_order_atual) {
+    $icone = '';
+    $proxima_order = 'ASC';
+
+    if ($coluna_nome === $sort_col_atual) {
+        if ($sort_order_atual === 'ASC') {
+            $icone = ' <i class="fas fa-sort-up"></i>';
+            $proxima_order = 'DESC';
+        } else {
+            $icone = ' <i class="fas fa-sort-down"></i>';
+            $proxima_order = 'ASC';
+        }
+    } else {
+        $icone = ' <i class="fas fa-sort text-muted"></i>';
+    }
+
+    $link = construir_query_string(['sort' => $coluna_nome, 'order' => $proxima_order]);
+    echo '<th><a href="' . $link . '" class="text-decoration-none text-dark">' . $label . $icone . '</a></th>';
+}
+
+/**
+ * Gera o HTML para o seletor de "Itens por Página".
+ * @param int $per_page_atual O número de itens por página atual
+ * @param array $opcoes As opções para o select (ex: [10, 25, 50])
+ * @param string $page_param_name O nome do parâmetro da página (page_todos, page_meus, page_reservas)
+ */
+function seletor_itens_por_pagina(int $per_page_atual, array $opcoes = [5, 10, 25, 50], string $page_param_name = 'per_page') {
+    echo '<form method="GET" class="d-flex align-items-center mb-0" style="max-width: 200px;">';
+    
+    // Preserva outros parâmetros GET
+    foreach ($_GET as $key => $value) {
+        // Não preserva o próprio 'per_page' ou a página que estamos controlando
+        if ($key !== $page_param_name && $key !== 'page_todos' && $key !== 'page_meus' && $key !== 'page_reservas') {
+            echo '<input type="hidden" name="' . htmlspecialchars($key) . '" value="' . htmlspecialchars($value) . '">';
+        }
+    }
+    
+    // Preserva os outros contadores de página
+    if ($page_param_name != 'per_page' && isset($_GET['page_todos'])) { // hack para o 'per_page' principal
+         echo '<input type="hidden" name="page_todos" value="' . htmlspecialchars($_GET['page_todos']) . '">';
+    }
+    if ($page_param_name != 'per_page_meus' && isset($_GET['page_meus'])) {
+         echo '<input type="hidden" name="page_meus" value="' . htmlspecialchars($_GET['page_meus']) . '">';
+    }
+    if ($page_param_name != 'per_page' && isset($_GET['page_reservas'])) { // hack para o 'per_page' principal
+         echo '<input type="hidden" name="page_reservas" value="' . htmlspecialchars($_GET['page_reservas']) . '">';
+    }
+
+
+    echo '<label for="' . $page_param_name . '" class="form-label me-2 mb-0" style="white-space: nowrap;">Ver:</label>';
+    echo '<select name="' . $page_param_name . '" id="' . $page_param_name . '" class="form-select form-select-sm" onchange="this.form.submit()">';
+    
+    foreach ($opcoes as $opcao) {
+        $selected = ($opcao == $per_page_atual) ? 'selected' : '';
+        echo '<option value="' . $opcao . '" ' . $selected . '>' . $opcao . ' por página</option>';
+    }
+    
+    echo '</select>';
+    echo '</form>';
+}
+
+/**
+ * Gera o HTML para a navegação de paginação.
+ * @param int $pagina_atual A página atual
+ * @param int $total_paginas O total de páginas
+ * @param string $param_nome O nome do parâmetro GET para a página (ex: "page_todos")
+ */
+function gerar_paginacao(int $pagina_atual, int $total_paginas, string $param_nome) {
+    if ($total_paginas <= 1) return;
+
+    echo '<nav class="paginacao mt-3 mb-3 d-flex justify-content-center align-items-center">';
+    
+    // Link "Anterior"
+    $link_anterior = construir_query_string([$param_nome => max(1, $pagina_atual - 1)]);
+    $disabled_anterior = ($pagina_atual <= 1) ? 'disabled' : '';
+    echo '<a href="' . $link_anterior . '" class="page-link-reservas ' . $disabled_anterior . '"><i class="fas fa-chevron-left"></i></a>';
+    
+    // Texto da Página
+    echo '<span class="mx-3">Página ' . $pagina_atual . ' de ' . $total_paginas . '</span>';
+    
+    // Link "Próxima"
+    $link_proxima = construir_query_string([$param_nome => min($total_paginas, $pagina_atual + 1)]);
+    $disabled_proxima = ($pagina_atual >= $total_paginas) ? 'disabled' : '';
+    echo '<a href="' . $link_proxima . '" class="page-link-reservas ' . $disabled_proxima . '"><i class="fas fa-chevron-right"></i></a>';
+    
+    echo '</nav>';
+}
+
+/**
+ * ⭐️ FUNÇÃO DE TRADUÇÃO ATUALIZADA (COM FALLBACK)
+ * Formata uma data/hora (string ou DateTime) para Português do Brasil.
+ * Inclui um fallback caso a extensão Intl não esteja habilitada.
+ * @param string|DateTime $data_hora O objeto DateTime ou string da data.
+ * @param string $formato O formato desejado (ex: 'EEEE, d/M/y' ou 'HH:mm')
+ * @return string A data formatada.
+ */
+function formatar_data_br($data_hora, string $formato): string {
+    if (is_string($data_hora)) {
+        try {
+            $data_hora = new DateTime($data_hora);
+        } catch (Exception $e) {
+            return 'Data Inválida';
+        }
+    }
+
+    // 1. Tenta usar o formatador Intl (preferencial)
+    if (class_exists('IntlDateFormatter')) {
+        $formatter = new IntlDateFormatter(
+            'pt_BR',
+            IntlDateFormatter::FULL,
+            IntlDateFormatter::FULL,
+            'America/Sao_Paulo', // Ajuste para seu fuso horário se necessário
+            IntlDateFormatter::GREGORIAN,
+            $formato
+        );
+        // Corrige bug do Intl com 'EEEE' (dia da semana)
+        if ($formato === 'EEEE') {
+             return ucfirst($formatter->format($data_hora));
+        }
+        return $formatter->format($data_hora);
+    }
+
+    // 2. --- Fallback Simples (se Intl não estiver disponível) ---
+    // Mapeamento manual
+    $dias_semana = [
+        'Monday'    => 'Segunda-feira',
+        'Tuesday'   => 'Terça-feira',
+        'Wednesday' => 'Quarta-feira',
+        'Thursday'  => 'Quinta-feira',
+        'Friday'    => 'Sexta-feira',
+        'Saturday'  => 'Sábado',
+        'Sunday'    => 'Domingo'
+    ];
+    
+    $meses_abrev = [
+        'Jan' => 'Jan', 'Feb' => 'Fev', 'Mar' => 'Mar', 'Apr' => 'Abr',
+        'May' => 'Mai', 'Jun' => 'Jun', 'Jul' => 'Jul', 'Aug' => 'Ago',
+        'Sep' => 'Set', 'Oct' => 'Out', 'Nov' => 'Nov', 'Dec' => 'Dez'
+    ];
+
+    // Converte o formato Intl para o formato date() do PHP
+    $formato_date = $formato;
+    $formato_date = str_replace('EEEE', 'l', $formato_date);     // Dia da semana completo (ex: Monday)
+    $formato_date = str_replace('d/MM/Y', 'd/m/Y', $formato_date); // Data (ex: 31/12/2025)
+    $formato_date = str_replace('d/MM/y', 'd/m/y', $formato_date); // Data (ex: 31/12/25)
+    $formato_date = str_replace('d/M/y', 'd/m/y', $formato_date);   // Data (ex: 31/12/25)
+    $formato_date = str_replace('HH:mm', 'H:i', $formato_date);    // Hora (ex: 14:30)
+    
+    $data_formatada = $data_hora->format($formato_date);
+
+    // Traduz manualmente os dias da semana
+    $data_formatada = str_replace(array_keys($dias_semana), array_values($dias_semana), $data_formatada);
+    
+    // Traduz manualmente os meses (se o formato pedir)
+    // (Esta parte é mais simples, pode não pegar todos os casos de formato Intl)
+    $data_formatada = str_replace(array_keys($meses_abrev), array_values($meses_abrev), $data_formatada);
+
+    return $data_formatada;
+}
 ?>
+

@@ -7,6 +7,26 @@ verificar_admin();
 gerar_cabecalho('Painel Administrativo');
 
 // ======================================================================
+// ⭐️ NOVAS VARIÁVEIS DE ORDENAÇÃO E PAGINAÇÃO
+// ======================================================================
+$sort_col = filter_input(INPUT_GET, 'sort', FILTER_SANITIZE_SPECIAL_CHARS) ?? 'data';
+$sort_order = filter_input(INPUT_GET, 'order', FILTER_SANITIZE_SPECIAL_CHARS) ?? 'DESC';
+// ⭐️ Lógica de 'per_page' atualizada para usar o nome do parâmetro correto
+$per_page = filter_input(INPUT_GET, 'per_page_reservas', FILTER_VALIDATE_INT) ?? 10;
+$pagina_atual = filter_input(INPUT_GET, 'page_reservas', FILTER_VALIDATE_INT) ?? 1;
+
+// Mapeia colunas amigáveis para colunas do DB
+$sort_map = [
+    'usuario' => 'u.nome_completo',
+    'recurso' => 'r.nome',
+    'finalidade' => 'd.nome',
+    'data' => 'a.data_hora_inicio',
+    'status' => 'a.status'
+];
+$order_by_sql = ($sort_map[$sort_col] ?? 'a.data_hora_inicio') . ' ' . (strtoupper($sort_order) === 'ASC' ? 'ASC' : 'DESC');
+
+
+// ======================================================================
 // ⭐️ FUNÇÃO DE AGRUPAMENTO (copiada para cá)
 // ======================================================================
 if (!function_exists('agrupar_agendamentos')) {
@@ -40,8 +60,8 @@ $sql_admin_todos = "
     JOIN recursos r ON a.id_recurso = r.id
     LEFT JOIN disciplinas d ON a.id_disciplina = d.id
     LEFT JOIN turmas t ON a.id_turma = t.id
-    ORDER BY a.grupo_recorrencia_id, a.data_hora_inicio DESC
-";
+    ORDER BY $order_by_sql, a.grupo_recorrencia_id 
+"; // ⭐️ ORDER BY ATUALIZADO
 $stmt_admin_todos = $pdo->prepare($sql_admin_todos);
 $stmt_admin_todos->execute();
 $admin_agendamentos_lista = $stmt_admin_todos->fetchAll(PDO::FETCH_ASSOC);
@@ -50,24 +70,23 @@ $admin_agendamentos_lista = $stmt_admin_todos->fetchAll(PDO::FETCH_ASSOC);
 $admin_agendamentos_agrupados = agrupar_agendamentos($admin_agendamentos_lista);
 
 // FAZ A PAGINAÇÃO em cima dos GRUPOS
-$admin_ag_por_pagina = 10;
-$admin_pagina_atual = filter_input(INPUT_GET, 'page_reservas', FILTER_VALIDATE_INT) ?? 1;
-$admin_offset = ($admin_pagina_atual - 1) * $admin_ag_por_pagina;
 $total_admin_grupos = count($admin_agendamentos_agrupados);
-$total_admin_paginas = max(1, ceil($total_admin_grupos / $admin_ag_por_pagina));
+$total_admin_paginas = max(1, ceil($total_admin_grupos / $per_page));
+$pagina_atual = min($pagina_atual, $total_admin_paginas); // Corrige se a página for inválida
+$admin_offset = ($pagina_atual - 1) * $per_page;
 
 // Fatiar o array de grupos para a página atual
-$admin_grupos_paginados = array_slice($admin_agendamentos_agrupados, $admin_offset, $admin_ag_por_pagina, true);
+$admin_grupos_paginados = array_slice($admin_agendamentos_agrupados, $admin_offset, $per_page, true);
 
 ?>
 
 <!-- ⭐️ ESTILO DO ACCORDION (copiado para cá) -->
 <style>
-    .accordion-toggle[aria-expanded="true"] .bi-chevron-right {
+    .accordion-toggle[aria-expanded="true"] .fa-chevron-right {
         transform: rotate(90deg);
         transition: transform 0.2s ease-in-out;
     }
-    .accordion-toggle[aria-expanded="false"] .bi-chevron-right {
+    .accordion-toggle[aria-expanded="false"] .fa-chevron-right {
         transform: rotate(0deg);
         transition: transform 0.2s ease-in-out;
     }
@@ -103,11 +122,12 @@ $admin_grupos_paginados = array_slice($admin_agendamentos_agrupados, $admin_offs
 
     <!-- 
      ⭐️ BLOCO DE GERENCIAR RESERVAS MODIFICADO
-     Agora usa renderização PHP com accordion
     -->
     <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 h5 fw-bold">Gerenciar Reservas</h5>
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+            <h5 class="mb-0 h5 fw-bold me-3">Gerenciar Reservas</h5>
+             <!-- ⭐️ NOVO: Seletor de Itens por Página -->
+            <?php seletor_itens_por_pagina($per_page, [10, 25, 50, 100], 'per_page_reservas'); ?>
         </div>
         <!-- ⭐️ ID ADICIONADO AQUI para o JavaScript de ações funcionar -->
         <div class="card-body p-0" id="container-reservas-admin"> 
@@ -116,12 +136,13 @@ $admin_grupos_paginados = array_slice($admin_agendamentos_agrupados, $admin_offs
                     <thead>
                         <tr>
                             <th style="width: 20px;"></th> <!-- Ícone -->
-                            <th>Usuário</th>
-                            <th>Recurso</th>
-                            <th>Finalidade</th>
-                            <th>Data/Hora</th>
+                             <!-- ⭐️ NOVOS: Cabeçalhos Ordenáveis -->
+                            <?php th_sortable('Usuário', 'usuario', $sort_col, $sort_order); ?>
+                            <?php th_sortable('Recurso', 'recurso', $sort_col, $sort_order); ?>
+                            <?php th_sortable('Finalidade', 'finalidade', $sort_col, $sort_order); ?>
+                            <?php th_sortable('Data/Hora', 'data', $sort_col, $sort_order); ?>
                             <th class="text-center">Tipo</th>
-                            <th class="text-center">Status</th>
+                            <?php th_sortable('Status', 'status', $sort_col, $sort_order); ?>
                             <th class="text-center">Ações</th>
                         </tr>
                     </thead>
@@ -162,14 +183,22 @@ $admin_grupos_paginados = array_slice($admin_agendamentos_agrupados, $admin_offs
                                         <?php endif; ?>
                                     </td>
                                     <td>
+                                        <!-- ⭐️ LÓGICA DE DATA/HORA ATUALIZADA -->
                                         <?php if ($e_recorrente): ?>
-                                            <strong>Recorrente (<?= count($instancias) ?>x)</strong><br>
+                                            <?php
+                                                $dia_semana_pt = formatar_data_br($instancias[0]['data_hora_inicio'], 'EEEE');
+                                            ?>
+                                            <strong><?= $dia_semana_pt ?> (<?= count($instancias) ?>x)</strong><br>
                                             <small>
-                                                De: <?= (new DateTime(end($instancias)['data_hora_inicio']))->format('d/m/y') ?>
-                                                Até: <?= (new DateTime(reset($instancias)['data_hora_inicio']))->format('d/m/y') ?>
+                                                <?= formatar_data_br(end($instancias)['data_hora_inicio'], 'd/MM/y') ?>
+                                                - <?= formatar_data_br(reset($instancias)['data_hora_inicio'], 'd/MM/y') ?>
                                             </small>
                                         <?php else: ?>
-                                            <?= (new DateTime($dados_comuns['data_hora_inicio']))->format('d/m/Y H:i') ?>
+                                            <strong><?= formatar_data_br($dados_comuns['data_hora_inicio'], 'd/MM/Y') ?></strong><br>
+                                            <small class="text-muted">
+                                                <?= formatar_data_br($dados_comuns['data_hora_inicio'], 'HH:mm') ?>
+                                                - <?= formatar_data_br($dados_comuns['data_hora_fim'], 'HH:mm') ?>
+                                            </small>
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-center">
@@ -202,7 +231,12 @@ $admin_grupos_paginados = array_slice($admin_agendamentos_agrupados, $admin_offs
                                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                                 <div>
                                                                     <i class="fas fa-calendar-day me-2"></i>
-                                                                    <strong><?= (new DateTime($instancia['data_hora_inicio']))->format('l, d/m/Y H:i') ?></strong>
+                                                                    <!-- ⭐️ TRADUÇÃO APLICADA AQUI -->
+                                                                    <strong><?= formatar_data_br($instancia['data_hora_inicio'], 'EEEE, d/MM/Y') ?></strong>
+                                                                    <span class="text-muted ms-2">
+                                                                        (<?= formatar_data_br($instancia['data_hora_inicio'], 'HH:mm') ?>
+                                                                        - <?= formatar_data_br($instancia['data_hora_fim'], 'HH:mm') ?>)
+                                                                    </span>
                                                                     <span class="badge status-<?= $instancia['status'] ?> ms-2"><?= ucfirst($instancia['status']) ?></span>
                                                                 </div>
                                                                 <!-- Ações para o item INDIVIDUAL -->
@@ -228,20 +262,8 @@ $admin_grupos_paginados = array_slice($admin_agendamentos_agrupados, $admin_offs
                 </table>
             </div>
 
-            <!-- Paginação (Reservas Admin) -->
-            <?php if ($total_admin_paginas > 1): ?>
-                <nav class="paginacao mt-3 mb-3 d-flex justify-content-center align-items-center">
-                    <a href="?page_reservas=<?= max(1, $admin_pagina_atual) ?>"
-                       class="page-link-reservas <?= $admin_pagina_atual <= 1 ? 'disabled' : '' ?>">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                    <span class="mx-3">Página <?= $admin_pagina_atual ?> de <?= $total_admin_paginas ?></span>
-                    <a href="?page_reservas=<?= min($total_admin_paginas, $admin_pagina_atual + 1) ?>"
-                       class="page-link-reservas <?= $admin_pagina_atual >= $total_admin_paginas ? 'disabled' : '' ?>">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </nav>
-            <?php endif; ?>
+            <!-- ⭐️ Paginação (Reservas Admin) ATUALIZADA -->
+            <?php gerar_paginacao($pagina_atual, $total_admin_paginas, 'page_reservas'); ?>
         </div>
     </div>
     
@@ -349,31 +371,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const btn = e.target.closest('button[data-action]');
         if (!btn) return;
         
-        const { id, action, grupoId } = btn.dataset;
-        let { id: acaoId, acaoQuery } = (grupoId && action !== 'deletar') 
-            ? { id: grupoId, acaoQuery: `acao=${action}&grupo_id=${grupoId}` } // Ação em grupo (Aprovar/Recusar)
-            : { id: id, acaoQuery: `acao=${action}&id=${id}` }; // Ação individual ou Deletar
-
-        const confirmMessages = { 
-            aprovar: `Deseja realmente APROVAR ${grupoId ? 'esta SÉRIE' : 'esta reserva'}?`, 
-            recusar: `Deseja realmente RECUSAR ${grupoId ? 'esta SÉRIE' : 'esta reserva'}?`, 
-            deletar: `Deseja realmente DELETAR ${grupoId ? 'esta SÉRIE' : 'esta reserva'}? Esta ação é irreversível.` 
-        };
+        const { id, action, grupoId } = btn.dataset; // data-grupo-id
+        let isGrupo = grupoId && grupoId.length > 0;
         
-        // Ajuste para deleção individual dentro de um grupo
-        if (action === 'deletar' && !grupoId) {
-             confirmMessages.deletar = 'Deseja realmente DELETAR esta reserva individual? Esta ação é irreversível.';
+        let acaoQuery = `acao=${action}`;
+        let confirmMsg = '';
+
+        if (isGrupo) {
+            // Ação em grupo
+            acaoQuery += `&grupo_id=${grupoId}`;
+            if(action === 'aprovar') confirmMsg = 'Deseja realmente APROVAR esta SÉRIE?';
+            else if(action === 'recusar') confirmMsg = 'Deseja realmente RECUSAR esta SÉRIE?';
+            else if(action === 'deletar') confirmMsg = 'Deseja realmente DELETAR esta SÉRIE? Esta ação é irreversível.';
+        } else {
+            // Ação individual
+            acaoQuery += `&id=${id}`;
+            if(action === 'aprovar') confirmMsg = 'Deseja realmente APROVAR esta reserva?';
+            else if(action === 'recusar') confirmMsg = 'Deseja realmente RECUSAR esta reserva?';
+            else if(action === 'deletar') confirmMsg = 'Deseja realmente DELETAR esta reserva? Esta ação é irreversível.';
         }
         
-        if (confirm(confirmMessages[action])) {
+        if (confirm(confirmMsg)) {
             try {
                 // A API é chamada da mesma forma
                 const res = await fetch(`${BASE_URL}/api/agendamentos.php?${acaoQuery}`);
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.error || 'A API retornou um erro.');
                 
-                // ⭐️ MUDANÇA: Em vez de carregar, apenas recarrega a página
                 alert('Ação executada com sucesso!');
+                // Recarrega a página para mostrar as mudanças
                 window.location.reload(); 
             
             } catch (e) {
@@ -586,3 +612,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
