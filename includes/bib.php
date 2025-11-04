@@ -76,9 +76,12 @@ function gerar_cabecalho($titulo_pagina) {
     <div id="cabecalho-principal">
         <div class="container">
             <div id="container-logo">
-                <p class="marca-subtitulo m-0">Resolva Aqui</p>
-                <h1 class="marca-titulo">IFPI</h1>
-                <p class="marca-descricao m-0">MINISTÉRIO DA EDUCAÇÃO</p>
+                <img src="{$base_url}/assets/logos/logo_resolva_ifpi.png" alt="Logo Resolva Aqui IFPI" class="logo-resolva">
+                <div class="texto-logo">
+                    <p class="marca-subtitulo m-0">Resolva Aqui</p>
+                    <h1 class="marca-titulo">IFPI</h1>
+                    <p class="marca-descricao m-0">RESOLVA SEUS PROBLEMAS AQUI</p>
+                </div>
             </div>
             <div id="container-busca-social">
                 <div id="caixa-busca-portal">
@@ -131,9 +134,9 @@ HTML;
  * Se não estiver, redireciona para a página de login e encerra a execução do script.
  */
     function verificar_login() {
-        // Se a variável de sessão 'usuario_id' não existir, significa que não há ninguém logado.
+        // Se a variável de sessão 'id_usuario' não existir, significa que não há ninguém logado.
         $base_url = get_base_url();
-        if (!isset($_SESSION['usuario_id'])) {
+        if (!isset($_SESSION['id_usuario'])) {
             // Se já estamos na pasta registro, o caminho é diferente
             if (strpos($_SERVER['REQUEST_URI'], '/registro/') !== false) {
                 header("Location: login.php");

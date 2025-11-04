@@ -50,7 +50,7 @@ body {
 
 .logo-movel {
     display: none;
-    width: 125px;
+    width: 325px;
     margin: 0 auto 1.5rem auto;
 }
 
@@ -67,6 +67,12 @@ body {
 .logo-imagem {
     width: 350px;
     height: auto;
+}
+
+#logo-gerador {
+    display: flex;
+    width: 350px;
+    margin: 0 auto 1.5rem auto;
 }
 
 .slogan {
@@ -327,4 +333,86 @@ select.campo-input {
     width: auto;           /* Largura automática baseada no conteúdo */
     margin-top: 0;         /* Remove margem superior que não é mais necessária */
     flex-shrink: 0;        /* Impede que o botão encolha se a tela for pequena */
+}
+
+/* ======================================================= */
+/* == NOVOS ESTILOS PARA A TABELA DE MATRÍCULAS == */
+/* ======================================================= */
+
+.tabela-matriculas {
+    width: 100%;
+    /* Adiciona rolagem horizontal em telas pequenas */
+    overflow-x: auto;
+    /* Adiciona um 'clip' para os cantos arredondados */
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tabela-matriculas table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    color: var(--cor-texto-secundario);
+    /* Garante que a tabela ocupe o espaço mínimo necessário, 
+       mas ainda possa expandir até 100% */
+    min-width: 800px; 
+}
+
+.tabela-matriculas th {
+    background-color: rgba(102, 246, 210, 0.08); /* Fundo sutil com a cor destaque */
+    color: var(--cor-texto-primario);
+    font-weight: 600;
+    text-align: left;
+    padding: 0.85rem 1rem;
+    border-bottom: 2px solid var(--cor-destaque);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap; /* Impede que o cabeçalho quebre a linha */
+}
+
+.tabela-matriculas td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    vertical-align: middle;
+    white-space: nowrap; /* Impede que o conteúdo da célula quebre */
+}
+
+/* Remove a borda da última linha para um look mais limpo */
+.tabela-matriculas tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tabela-matriculas tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Ajustes nos links/botões de ação dentro da tabela */
+.tabela-matriculas .btn-text-danger {
+    color: #FF6B6B; /* Um vermelho mais vivo */
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.tabela-matriculas .btn-text-danger:hover {
+    color: #FF4040;
+}
+.tabela-matriculas .btn-text-danger i {
+     font-size: 1.1rem; /* Aumenta um pouco o ícone */
+}
+
+/* Centralizar o ID e as Ações */
+.tabela-matriculas th:first-child,
+.tabela-matriculas td:first-child,
+.tabela-matriculas th:last-child,
+.tabela-matriculas td:last-child {
+    text-align: center;
+}
+
+/* Alinhar o formulário de delete */
+ .tabela-matriculas td:last-child form {
+    margin: 0; /* Remove qualquer margem de formulário padrão */
 }

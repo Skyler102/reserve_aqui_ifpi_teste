@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             session_regenerate_id(true);
 
             // 6. Armazena os dados do usuário na sessão
-            $_SESSION['usuario_id'] = $usuario['id'];
+            $_SESSION['id_usuario'] = $usuario['id'];
             $_SESSION['usuario_nome'] = $usuario['nome_completo'];
             $_SESSION['usuario_tipo'] = $usuario['tipo_usuario'];
 

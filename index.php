@@ -3,7 +3,7 @@
 session_start();
 
 // Verifica se a sessão do usuário já existe
-if (isset($_SESSION['usuario_id'])) {
+if (isset($_SESSION['id_usuario'])) {
     // Se existir, verifica o tipo de usuário e redireciona para o painel apropriado
     if ($_SESSION['usuario_tipo'] === 'admin') {
         header("Location: painel_admin.php");

@@ -294,3 +294,31 @@ h2, h4 {
     pointer-events: none; 
     color: #6c757d; /* Cor de texto desabilitado */
 }
+
+.modal-header{
+    background-color: var(--ifpi-verde-claro);
+    color: var(--ifpi-texto-primario);
+}
+
+#btn-close{
+    color: var(--ifpi-texto-primario);
+}
+
+
+/* Estilo para o container do logo no cabeçalho */
+#container-logo {
+    display: flex; /* Torna o container um flexbox */
+    align-items: center; /* Alinha a imagem e o bloco de texto verticalmente */
+}
+
+/* Estilo para a imagem do logo no cabeçalho */
+.logo-resolva {
+    height: 100px; /* Ajuste a altura conforme necessário */
+    margin-right: 15px; /* Adiciona espaço à direita da imagem */
+}
+
+#container-logo .marca-titulo {
+
+    font-size: 2.2rem; /* Ajuste o tamanho da fonte conforme necessário */
+    margin: 0; /* Remove margens padrão */
+}

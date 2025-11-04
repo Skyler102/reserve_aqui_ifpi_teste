@@ -15,12 +15,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     // Determina o tipo de usuário baseado no prefixo da matrícula
     $prefixo = substr($matricula, 0, 4);
+    
+    // --- CORREÇÃO IMPORTANTE ---
+    // Ajustamos os valores para bater EXATAMENTE com os ENUMs do seu banco de dados
+    
+    $tipo_usuario_para_inserir = '';
+    // $tipo_usuario_para_validar_db não é mais necessário, podemos usar $tipo_usuario_para_inserir
+
     if ($prefixo === 'PROF') {
-        $tipo_usuario = 'professor';
+        // O banco espera 'professor'
+        $tipo_usuario_para_inserir = 'professor';
+
     } elseif ($prefixo === 'GEST') {
-        $tipo_usuario = 'admin';
+        // O banco espera 'admin' (para gestor/administrador)
+        $tipo_usuario_para_inserir = 'admin';
+
     } else {
-        $_SESSION['register_error'] = "Matrícula inválida. Use uma matrícula gerada pelo sistema.";
+        $_SESSION['register_error'] = "Matrícula inválida. O formato não corresponde a um tipo de usuário conhecido.";
         header("Location: ../registro.php");
         exit();
     }
@@ -61,35 +72,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    if ($matricula_info['tipo_usuario'] !== $tipo_usuario) {
+    // --- CORREÇÃO DA COMPARAÇÃO ---
+    // Agora comparamos os valores corretos. 
+    // Ex: 'professor' (do DB) com 'professor' (do PHP)
+    if ($matricula_info['tipo_usuario'] !== $tipo_usuario_para_inserir) {
         $_SESSION['register_error'] = "Tipo de usuário não corresponde ao tipo da matrícula.";
+        // $_SESSION['debug'] = "DB: " . $matricula_info['tipo_usuario'] . " | PHP: " . $tipo_usuario_para_inserir; // (Linha de debug)
         header("Location: ../registro.php");
         exit();
     }
 
-    // 4. Verifica se o email já existe no banco
-    $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
-    $stmt->execute([$email]);
-    if ($stmt->fetch()) {
+    // 4. Se for um gestor (admin), verifica se já existe um professor com o mesmo nome
+    // CORRIGIDO para checar 'admin'
+    if ($tipo_usuario_para_inserir === 'admin') {
+        $stmt_check_name = $pdo->prepare("SELECT id FROM usuarios WHERE nome_completo = ? AND tipo_usuario = 'professor'");
+        $stmt_check_name->execute([$nome_completo]);
+        if ($stmt_check_name->fetch()) {
+            $_SESSION['register_error'] = "Já existe um professor cadastrado com este nome. Um gestor não pode ter o mesmo nome de um professor.";
+            // Salva os dados do formulário para preenchimento automático, exceto senhas
+            $_SESSION['form_data'] = ['full_name' => $nome_completo, 'registration' => $matricula, 'email' => $email];
+            header("Location: ../registro.php");
+            exit();
+        }
+    }
+
+
+    // 5. Verifica se o email já existe no banco
+    $stmt_email = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
+    $stmt_email->execute([$email]);
+    if ($stmt_email->fetch()) {
         $_SESSION['register_error'] = "Este email já está cadastrado.";
+        // Salva os dados do formulário para preenchimento automático, exceto senhas
+        $_SESSION['form_data'] = ['full_name' => $nome_completo, 'registration' => $matricula, 'email' => $email];
         header("Location: ../registro.php");
         exit();
     }
 
-    // 4. Criptografa a senha com segurança
+    // 6. Criptografa a senha com segurança
     $senha_hash = password_hash($senha, PASSWORD_ARGON2ID);
 
-    // 5. Insere o novo usuário no banco de dados com o tipo especificado
+    // 7. Insere o novo usuário no banco de dados com o tipo especificado
     try {
         // Inicia a transação
         $pdo->beginTransaction();
 
         // Insere o novo usuário
+        // $tipo_usuario_para_inserir ('professor' ou 'admin') agora bate com o ENUM do DB
         $stmt = $pdo->prepare(
             "INSERT INTO usuarios (nome_completo, matricula, email, senha_hash, tipo_usuario) 
              VALUES (?, ?, ?, ?, ?)"
         );
-        $stmt->execute([$nome_completo, $matricula, $email, $senha_hash, $tipo_usuario]);
+        $stmt->execute([$nome_completo, $matricula, $email, $senha_hash, $tipo_usuario_para_inserir]);
 
         // Marca a matrícula como usada
         $stmt = $pdo->prepare("UPDATE matriculas_geradas SET usado = TRUE WHERE matricula = ?");

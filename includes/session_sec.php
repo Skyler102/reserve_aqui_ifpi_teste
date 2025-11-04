@@ -15,7 +15,7 @@ if ($secure) {
 }
 
 // Prevent caching of secure pages
-if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['usuario_id'])) {
+if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['id_usuario'])) {
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     header('Pragma: no-cache');
     header('Expires: 0');

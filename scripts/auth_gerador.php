@@ -45,7 +45,7 @@ try {
         // Usuário autenticado
         session_regenerate_id(true);
         $_SESSION['auth_gerador'] = true;
-        $_SESSION['usuario_id'] = $row['id'];
+        $_SESSION['id_usuario'] = $row['id'];
         $_SESSION['usuario_nome'] = $row['nome_completo'];
         $_SESSION['usuario_tipo'] = $row['tipo_usuario'];
 
