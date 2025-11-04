@@ -109,19 +109,55 @@ $admin_grupos_paginados = array_slice($admin_agendamentos_agrupados, $admin_offs
             <h2 class="h3 fw-bold">Painel Administrativo</h2>
             <p class="text-muted">Gerencie recursos, reservas, turmas e disciplinas.</p>
         </div>
-        <div class="mt-2 mt-md-0">
-            <button class="btn btn-outline-secondary ms-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAdicionar">Adicionar Recursos</button>
-            <button class="btn btn-outline-secondary ms-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalRecursos">Gerenciar Recursos</button>
-            <button class="btn btn-outline-secondary ms-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTurmas">Gerenciar Turmas</button>
-            <button class="btn btn-outline-secondary ms-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalDisciplinas">Gerenciar Disciplinas</button>
+        
+        <!-- 
+        ======================================================
+        ⭐️ BOTÕES REAGRUPADOS CONFORME SOLICITADO
+        ======================================================
+        -->
+        <div class="mt-2 mt-md-0 d-flex gap-2">
+            <!-- Botão principal mantido -->
             <a href="formulario_novo_agendamento.php" class="btn btn-acao shadow-sm">+ Nova Reserva</a>
+            
+            <!-- Novo Dropdown de Gerenciamento -->
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary shadow-sm dropdown-toggle" type="button" id="adminGerenciarMenu" data-bs-toggle="dropdown" aria-expanded="false" title="Gerenciar">
+                    <i class="fas fa-cog"></i> <!-- Ícone de "engrenagem" para gerenciamento -->
+                    <span class="visually-hidden">Gerenciar</span>
+                </button>
+                
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminGerenciarMenu">
+                    <li>
+                        <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#modalAdicionar">
+                            <i class="fas fa-plus-circle fa-fw me-2"></i> Adicionar Recursos
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#modalRecursos">
+                            <i class="fas fa-edit fa-fw me-2"></i> Gerenciar Recursos
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#modalTurmas">
+                            <i class="fas fa-users fa-fw me-2"></i> Gerenciar Turmas
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#modalDisciplinas">
+                            <i class="fas fa-book fa-fw me-2"></i> Gerenciar Disciplinas
+                        </button>
+                    </li>
+                </ul>
+            </div>
         </div>
+        <!-- ⭐️ FIM DOS BOTÕES REAGRUPADOS -->
+        
     </div>
     
     <?php render_flash(); ?>
 
     <!-- 
-     ⭐️ BLOCO DE GERENCIAR RESERVAS MODIFICADO
+      ⭐️ BLOCO DE GERENCIAR RESERVAS MODIFICADO
     -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
@@ -612,4 +648,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
